@@ -3,78 +3,85 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1B4D38">
+<meta name="theme-color" content="#0E4C6B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Póker de Dados</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231B4D38'/><circle cx='30' cy='30' r='9' fill='%23F5EFDC'/><circle cx='70' cy='30' r='9' fill='%23C0392B'/><circle cx='50' cy='50' r='9' fill='%23F5EFDC'/><circle cx='30' cy='70' r='9' fill='%23C0392B'/><circle cx='70' cy='70' r='9' fill='%23F5EFDC'/></svg>">
+<title>AGUARDADOS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230E4C6B'/><path d='M0 74c12 0 12-8 25-8s13 8 25 8 12-8 25-8 13 8 25 8v26H0z' fill='%232FA8C4'/><circle cx='30' cy='30' r='9' fill='%23F2EDDF'/><circle cx='70' cy='30' r='9' fill='%23C0392B'/><circle cx='50' cy='50' r='9' fill='%23F2EDDF'/></svg>">
 <style>
   *{box-sizing:border-box}
   body{
     margin:0;min-height:100vh;
-    background:radial-gradient(ellipse at 50% -10%, #2E7D57 0%, #1B4D38 55%, #123527 100%);
+    background:radial-gradient(ellipse at 50% -8%, #2FA8C4 0%, #12688F 45%, #072F45 100%);
     background-attachment:fixed;
-    font-family:'Segoe UI',system-ui,sans-serif;color:#F5EFDC;
+    font-family:'Segoe UI',system-ui,sans-serif;color:#EAF3F7;
     padding:16px 12px calc(40px + env(safe-area-inset-bottom));
     -webkit-text-size-adjust:100%;
   }
-  h1{font-family:Georgia,'Times New Roman',serif;text-align:center;font-size:26px;
-     letter-spacing:2px;margin:4px 0 2px;text-transform:uppercase}
+  h1{font-family:Georgia,'Times New Roman',serif;text-align:center;font-size:30px;
+     letter-spacing:6px;margin:6px 0 0;text-transform:uppercase;
+     text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .lema{text-align:center;font-size:12px;letter-spacing:3px;text-transform:uppercase;
+     opacity:.7;margin:2px 0 10px}
   .sub{text-align:center;font-size:12px;opacity:.85;margin:0 0 12px}
   .tabs{display:flex;gap:6px;margin-bottom:14px}
   .tabs button{flex:1;padding:9px 0;border-radius:8px;border:1.5px solid rgba(245,239,220,.35);
-    background:transparent;color:#F5EFDC;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
-  .tabs button.on{background:#F7F2E4;color:#1B4D38}
-  .card{background:#F7F2E4;color:#22221E;border-radius:12px;padding:12px;margin-bottom:14px;
+    background:transparent;color:#EAF3F7;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+  .tabs button.on{background:#F4F0E2;color:#0E4C6B}
+  .card{background:#F4F0E2;color:#22221E;border-radius:12px;padding:12px;margin-bottom:14px;
     box-shadow:0 4px 14px rgba(0,0,0,.35)}
   .card h2{font-family:Georgia,serif;font-size:15px;margin:0 0 6px;letter-spacing:1px;
-    text-transform:uppercase;color:#1B4D38}
+    text-transform:uppercase;color:#0E4C6B}
   .nota{font-size:12px;margin:0 0 10px;color:#66604C;line-height:1.4}
   .fila{display:flex;gap:8px}
-  input[type=text]{flex:1;padding:10px 12px;border-radius:8px;border:1.5px solid #C9BFA3;
+  input[type=text]{flex:1;padding:10px 12px;border-radius:8px;border:1.5px solid #BFB9A3;
     font-size:16px;background:#FFFDF6;font-family:inherit;color:#22221E;min-width:0}
-  .btn{padding:10px 14px;border-radius:8px;border:none;background:#1B4D38;color:#F5EFDC;
+  .btn{padding:10px 14px;border-radius:8px;border:none;background:#0E4C6B;color:#EAF3F7;
     font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
-  .btn.ghost{background:transparent;color:#1B4D38;border:1.5px solid #1B4D38}
-  .btn.rojo{background:#7A2E20;color:#F5EFDC}
+  .btn.ghost{background:transparent;color:#0E4C6B;border:1.5px solid #0E4C6B}
+  .btn.rojo{background:#A8443A;color:#EAF3F7}
   .btn:disabled{opacity:.5}
   .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-  .chip{background:#EFE8D2;border-radius:20px;padding:4px 6px 4px 12px;font-size:14px;
+  .chip{background:#E8E2CE;border-radius:20px;padding:4px 6px 4px 12px;font-size:14px;
     display:inline-flex;align-items:center}
   .chip button{border:none;background:transparent;color:#A33;font-size:16px;cursor:pointer;padding:0 4px}
-  .sug{background:transparent;border:1.5px dashed #1B4D38;color:#1B4D38;border-radius:20px;
+  .sug{background:transparent;border:1.5px dashed #0E4C6B;color:#0E4C6B;border-radius:20px;
     padding:5px 12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
   table{width:100%;border-collapse:collapse;font-size:14px}
-  th{padding:6px 4px;border-bottom:2px solid #1B4D38;text-align:center;font-family:Georgia,serif;font-size:13px}
+  th{padding:6px 4px;border-bottom:2px solid #0E4C6B;text-align:center;font-family:Georgia,serif;font-size:13px}
   th.izq{text-align:left}
-  td.cara{padding:6px 8px 6px 2px;border-bottom:1px solid #E0D7BF;font-weight:700;
+  td.cara{padding:6px 8px 6px 2px;border-bottom:1px solid #DCD5C0;font-weight:700;
     font-family:Georgia,serif;white-space:nowrap}
-  td.val{padding:4px 2px;border-bottom:1px solid #E0D7BF;text-align:center}
-  td.val.turno{background:#E4EFE6}
+  td.val{padding:4px 2px;border-bottom:1px solid #DCD5C0;text-align:center}
+  td.val.turno{background:#D9EDF4}
   td.num{font-weight:700}
   input.dado{width:52px;padding:8px 2px;text-align:center;font-size:16px;font-weight:700;
-    border-radius:6px;border:1.5px solid #C9BFA3;background:#FFFDF6;color:#22221E;font-family:inherit;
+    border-radius:6px;border:1.5px solid #BFB9A3;background:#FFFDF6;color:#22221E;font-family:inherit;
     -moz-appearance:textfield}
-  input.dado:disabled{background:#E7E2D2;color:#9A947F}
+  input.dado:disabled{background:#E2DDCB;color:#9A947F}
+  input.dado[readonly]{background:#D9EDF4;border-color:#0E4C6B;cursor:default}
+  .lapiz{display:none;border:none;background:transparent;color:#66604C;font-size:12px;
+    cursor:pointer;padding:2px 4px;font-family:inherit;line-height:1}
   input.dado::-webkit-outer-spin-button,input.dado::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-  .pts{font-size:11px;color:#1B4D38;font-weight:700;margin-top:2px}
+  .pts{font-size:11px;color:#0E4C6B;font-weight:700;margin-top:2px}
   .valor{font-size:11px;font-weight:400;color:#66604C}
-  td.sub{padding:7px 4px;text-align:center;font-weight:800;font-size:15px;background:#EFE8D2;
-    border-bottom:2px solid #1B4D38}
-  td.tot{padding:10px 4px;font-weight:800;font-size:17px;text-align:center;background:#1B4D38;color:#F5EFDC}
-  .banner{background:#C9A24B;color:#2A2412;border-radius:12px;padding:12px 14px;text-align:center;
+  td.sub{padding:7px 4px;text-align:center;font-weight:800;font-size:15px;background:#E8E2CE;
+    border-bottom:2px solid #0E4C6B}
+  td.tot{padding:10px 4px;font-weight:800;font-size:17px;text-align:center;background:#0E4C6B;color:#EAF3F7}
+  .banner{background:#E2A93B;color:#2A2412;border-radius:12px;padding:12px 14px;text-align:center;
     font-family:Georgia,serif;font-size:17px;font-weight:700;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-  .barra-fondo{flex:1;background:#E7DFC8;border-radius:4px}
+  .barra-fondo{flex:1;background:#E1DAC5;border-radius:4px}
   .barra{height:8px;border-radius:4px}
   .linea{display:flex;align-items:center;gap:6px;margin-bottom:6px}
   .pie{text-align:center;font-size:12px;opacity:.85;margin-top:10px}
-  button:focus-visible,input:focus-visible{outline:3px solid #C9A24B;outline-offset:2px}
+  button:focus-visible,input:focus-visible{outline:3px solid #E2A93B;outline-offset:2px}
   @media (prefers-reduced-motion:no-preference){.barra{transition:width .3s}}
 </style>
 </head>
 <body>
-<h1>🎲 Póker de Dados</h1>
+<h1>AGUARDADOS</h1>
+<p class="lema">🌊 Cabo de Gata · 5 dados</p>
 <p class="sub">Negra 1 · Roja 2 · J 3 · Q 4 · K 5 · As 6 · el as hace de comodín</p>
 <nav class="tabs">
   <button data-vista="partida" class="on">Partida</button>
@@ -188,7 +195,7 @@ function compartir(){
   const filas = [...estado.jugadores]
     .sort((a,b)=>total(b.id)-total(a.id))
     .map((p,i)=>`${i===0?"🏆":"  "} ${p.nombre}: ${total(p.id)} pts (libre ${puntosRonda(p.id,"libre")} / obligada ${puntosRonda(p.id,"obligada")})`);
-  const texto = "🎲 Póker de Dados\n" + filas.join("\n");
+  const texto = "🌊 AGUARDADOS\n" + filas.join("\n");
   if(navigator.share) navigator.share({text:texto}).catch(()=>{});
   else if(navigator.clipboard) navigator.clipboard.writeText(texto)
     .then(()=>alert("Resultado copiado. Ya puedes pegarlo."))
@@ -273,16 +280,56 @@ function tablaRonda(ronda, marcarTurno, bloqueada){
       });
       inp.value = hoja(p.id)[ronda][c.key];
       if(bloqueada) inp.disabled = true;
-      inp.addEventListener("focus", e=>e.target.select());
+
+      const lapiz = el("button",{class:"lapiz", title:"Corregir",
+        "aria-label":`Corregir ${c.label} de ${p.nombre}`}, "✎ corregir");
+      const fijar = () => {
+        if(inp.value === "" || inp.disabled) return;
+        inp.readOnly = true;
+        lapiz.style.display = "inline-block";
+      };
+      const abrir = () => {
+        if(inp.disabled) return;
+        inp.readOnly = false;
+        lapiz.style.display = "none";
+        inp.focus(); inp.select();
+      };
+      const saltar = () => {
+        const tabla = inp.closest("table");
+        if(!tabla) return;
+        const todas = [...tabla.querySelectorAll("input.dado")];
+        const i = todas.indexOf(inp);
+        const libre = todas.slice(i+1).find(x=>!x.disabled && x.value==="")
+                   || todas.slice(0,i).find(x=>!x.disabled && x.value==="");
+        if(libre){ fijar(); libre.focus(); libre.select(); }
+        else inp.blur();
+      };
+      let tSalto;
+      inp.addEventListener("keydown", e=>{
+        if(e.key === "Enter"){ e.preventDefault(); clearTimeout(tSalto); saltar(); }
+      });
+
+      lapiz.addEventListener("click", abrir);
+      inp.addEventListener("blur", fijar);
+      if(inp.value !== "") fijar();
+
+      inp.addEventListener("focus", e=>{ if(!inp.readOnly) e.target.select(); });
       inp.addEventListener("input", e=>{
         const abiertaAntes = obligadaAbierta();
+        // salta sola a la siguiente casilla; si es un "1" espera por si viene 10-15
+        clearTimeout(tSalto);
+        const v = e.target.value;
+        if(v !== ""){
+          if(v === "1") tSalto = setTimeout(saltar, 1300);
+          else tSalto = setTimeout(saltar, 250);
+        }
         estado.scores[p.id][ronda][c.key] = e.target.value;
         guardar();
         if(ronda==="libre" && obligadaAbierta() !== abiertaAntes){ render(); return; }
         actualizarNumeros();
       });
       celda.append(inp, el("div",{class:"pts", id:`pts-${p.id}-${ronda}-${c.key}`},
-                           String(puntosCelda(p.id,ronda,c.key))));
+                           String(puntosCelda(p.id,ronda,c.key))), lapiz);
       tr.append(celda);
     });
     tb.append(tr);
@@ -396,7 +443,7 @@ function vistaHistorial(){
   estado.historial.forEach(p=>{
     const max = Math.max(...p.resultados.map(r=>r.total));
     const cab = el("div",{style:"display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"},
-      el("h2",{style:"margin:0;font-family:Georgia,serif;font-size:15px;letter-spacing:1px;text-transform:uppercase;color:#1B4D38"}, fecha(p.fecha)),
+      el("h2",{style:"margin:0;font-family:Georgia,serif;font-size:15px;letter-spacing:1px;text-transform:uppercase;color:#0E4C6B"}, fecha(p.fecha)),
       el("button",{style:"border:none;background:transparent;color:#A33;font-size:16px;cursor:pointer",
         onclick:()=>borrarPartida(p.id), "aria-label":"Borrar partida"},"✕"));
     const tb = el("tbody");
@@ -462,7 +509,7 @@ function vistaStats(){
     cComp.append(el("div",{style:"margin-bottom:10px"},
       el("div",{style:"font-size:13px;font-weight:700;margin-bottom:3px"}, e.nombre),
       el("div",{class:"linea"}, el("span",{class:"valor", style:"width:60px"},"Libre"),
-        el("div",{class:"barra-fondo"}, el("div",{class:"barra", style:`width:${(l/tope)*100}%;background:#1B4D38`})),
+        el("div",{class:"barra-fondo"}, el("div",{class:"barra", style:`width:${(l/tope)*100}%;background:#0E4C6B`})),
         el("span",{style:"font-size:12px;width:32px;text-align:right"}, String(Math.round(l)))),
       el("div",{class:"linea"}, el("span",{class:"valor", style:"width:60px"},"Obligada"),
         el("div",{class:"barra-fondo"}, el("div",{class:"barra", style:`width:${(o/tope)*100}%;background:#C0392B`})),
