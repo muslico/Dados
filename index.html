@@ -78,6 +78,33 @@
   .pie{text-align:center;font-size:12px;opacity:.85;margin-top:10px}
   button:focus-visible,input:focus-visible{outline:3px solid #E2A93B;outline-offset:2px}
   @media (prefers-reduced-motion:no-preference){.barra{transition:width .3s}}
+
+  /* ----- Celebración del ganador ----- */
+  #fiesta{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
+     padding:calc(24px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));
+     background:radial-gradient(ellipse at 50% 40%, rgba(11,72,102,.86), rgba(3,24,36,.94))}
+  #fiesta.on{display:flex}
+  #fuegos{position:absolute;inset:0;width:100%;height:100%}
+  .fiesta-caja{position:relative;z-index:1;text-align:center;max-width:420px;width:100%;
+     animation:fiestaEntra .5s cubic-bezier(.2,1.4,.4,1) both}
+  .fiesta-copa{font-size:52px;display:block;animation:copaSube .9s cubic-bezier(.2,1.5,.4,1) both}
+  .fiesta-rot{font-size:12px;letter-spacing:5px;text-transform:uppercase;opacity:.75;margin:6px 0 2px}
+  .fiesta-nombre{font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:1.15;
+     text-transform:uppercase;letter-spacing:3px;margin:2px 0 6px;color:#FFF3D4;
+     text-shadow:0 0 18px rgba(226,169,59,.55),0 3px 12px rgba(0,0,0,.5)}
+  .fiesta-nombre span{display:inline-block;animation:letra .45s cubic-bezier(.2,1.6,.4,1) both}
+  .fiesta-pts{font-size:15px;opacity:.9;margin:0 0 4px}
+  .fiesta-lista{font-size:13px;opacity:.7;margin:10px 0 0;line-height:1.7}
+  .fiesta-botones{display:flex;gap:8px;margin-top:20px}
+  .fiesta-botones .btn{flex:1}
+  @keyframes fiestaEntra{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+  @keyframes copaSube{from{opacity:0;transform:translateY(24px) scale(.5) rotate(-18deg)}
+                        to{opacity:1;transform:none}}
+  @keyframes letra{from{opacity:0;transform:translateY(-18px) scale(.4) rotate(-8deg)}
+                     to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .fiesta-caja,.fiesta-copa,.fiesta-nombre span{animation:none}
+  }
 </style>
 </head>
 <body>
@@ -90,6 +117,11 @@
   <button data-vista="stats">Estadísticas</button>
 </nav>
 <main id="vista"></main>
+
+<div id="fiesta">
+  <canvas id="fuegos"></canvas>
+  <div class="fiesta-caja" id="fiesta-caja"></div>
+</div>
 
 <script>
 "use strict";
@@ -110,7 +142,7 @@ const hojaVacia = () => ({
   obligada: {negra:"",roja:"",j:"",q:"",k:"",as:""},
 });
 
-let estado = { jugadores:[], scores:{}, historial:[] };
+let estado = { jugadores:[], scores:{}, historial:[], celebrada:false };
 let vista = "partida", nextId = 1, confirmando = null;
 
 // ---------- Guardado ----------
@@ -118,7 +150,8 @@ function cargar(){
   try{
     const d = JSON.parse(localStorage.getItem(KEY));
     if(d){
-      estado = { jugadores:d.jugadores||[], scores:d.scores||{}, historial:d.historial||[] };
+      estado = { jugadores:d.jugadores||[], scores:d.scores||{}, historial:d.historial||[],
+                 celebrada:!!d.celebrada };
       nextId = Math.max(0, ...estado.jugadores.map(p=>p.id)) + 1 || 1;
     }
   }catch(e){}
@@ -169,6 +202,7 @@ function quitarJugador(id){
 }
 function limpiarMarcador(){
   estado.jugadores.forEach(p=>{ estado.scores[p.id] = hojaVacia(); });
+  estado.celebrada = false;
   confirmando = null; guardar(); render();
 }
 function guardarPartida(){
@@ -185,6 +219,7 @@ function guardarPartida(){
   };
   estado.historial.unshift(partida);
   estado.jugadores.forEach(p=>{ estado.scores[p.id] = hojaVacia(); });
+  estado.celebrada = false;
   confirmando = null; guardar();
   vista = "historial"; pintarTabs(); render();
 }
@@ -328,6 +363,8 @@ function tablaRonda(ronda, marcarTurno, bloqueada){
         guardar();
         if(ronda==="libre" && obligadaAbierta() !== abiertaAntes){ render(); return; }
         actualizarNumeros();
+        clearTimeout(tFiesta);
+        if(partidaCompleta() && !estado.celebrada) tFiesta = setTimeout(quizasCelebrar, 900);
       });
       celda.append(inp, el("div",{class:"pts", id:`pts-${p.id}-${ronda}-${c.key}`},
                            String(puntosCelda(p.id,ronda,c.key))), lapiz);
@@ -342,6 +379,124 @@ function tablaRonda(ronda, marcarTurno, bloqueada){
   });
   tb.append(trs); t.append(tb);
   return el("div",{class:"scroll"}, t);
+}
+
+// ---------- Celebración ----------
+const hojaLlena = pid => CARAS.every(c => hoja(pid).libre[c.key] !== "" && hoja(pid).obligada[c.key] !== "");
+const partidaCompleta = () => estado.jugadores.length>0 && estado.jugadores.every(p=>hojaLlena(p.id));
+function ganadores(){
+  if(!estado.jugadores.length) return [];
+  const mejor = Math.max(...estado.jugadores.map(p=>total(p.id)));
+  return estado.jugadores.filter(p=>total(p.id)===mejor);
+}
+
+let tFiesta = null;
+let fuegosID = null, paraFuegos = 0;
+function lanzarFuegos(){
+  const cv = document.getElementById("fuegos");
+  const ctx = cv.getContext && cv.getContext("2d");
+  if(!ctx) return;
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const W = () => cv.clientWidth, H = () => cv.clientHeight;
+  const medir = () => { cv.width = W()*dpr; cv.height = H()*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+  medir();
+  const COLORES = ["#E2A93B","#2FA8C4","#FFF3D4","#E76F51","#7FD1E8","#F6C453"];
+  const az = (a,b) => a + Math.random()*(b-a);
+  let cohetes = [], chispas = [], ultimo = 0;
+
+  function cohete(){
+    const x = az(W()*.15, W()*.85);
+    cohetes.push({x, y:H()+10, vx:az(-.4,.4), vy:-az(H()*.011, H()*.016),
+                  meta:az(H()*.15, H()*.45), col:COLORES[(Math.random()*COLORES.length)|0]});
+  }
+  function estallido(x,y,col){
+    const n = 46 + (Math.random()*26|0);
+    for(let i=0;i<n;i++){
+      const a = (Math.PI*2*i)/n + az(-.06,.06), v = az(1.1,4.4);
+      chispas.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, vida:1,
+                    baja:az(.008,.018), col: Math.random()<.22 ? "#FFF3D4" : col, r:az(1.4,2.8)});
+    }
+  }
+  function paso(t){
+    fuegosID = requestAnimationFrame(paso);
+    if(cv.width !== W()*dpr) medir();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.fillRect(0,0,W(),H());
+    ctx.globalCompositeOperation = "lighter";
+
+    if(t - ultimo > az(280,620) && t < paraFuegos){ ultimo = t; cohete(); if(Math.random()<.35) cohete(); }
+
+    cohetes = cohetes.filter(c=>{
+      c.x += c.vx; c.y += c.vy; c.vy += .045;
+      ctx.fillStyle = c.col; ctx.beginPath(); ctx.arc(c.x,c.y,2,0,7); ctx.fill();
+      if(c.vy >= 0 || c.y <= c.meta){ estallido(c.x,c.y,c.col); return false; }
+      return true;
+    });
+    chispas = chispas.filter(p=>{
+      p.x += p.vx; p.y += p.vy; p.vy += .052; p.vx *= .985; p.vy *= .985; p.vida -= p.baja;
+      if(p.vida <= 0) return false;
+      ctx.globalAlpha = Math.max(p.vida,0);
+      ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill();
+      ctx.globalAlpha = 1;
+      return true;
+    });
+    if(t > paraFuegos && !cohetes.length && !chispas.length){ cancelAnimationFrame(fuegosID); fuegosID = null; }
+  }
+  cancelAnimationFrame(fuegosID);
+  ctx.clearRect(0,0,W(),H());
+  paraFuegos = performance.now() + 9000;
+  cohete();
+  fuegosID = requestAnimationFrame(paso);
+}
+function pararFuegos(){
+  if(fuegosID) cancelAnimationFrame(fuegosID);
+  fuegosID = null; paraFuegos = 0;
+  const cv = document.getElementById("fuegos");
+  const ctx = cv.getContext && cv.getContext("2d");
+  if(ctx) ctx.clearRect(0,0,cv.width,cv.height);
+}
+
+function cerrarFiesta(){
+  document.getElementById("fiesta").classList.remove("on");
+  pararFuegos();
+}
+
+function celebrar(){
+  const g = ganadores();
+  if(!g.length) return;
+  const empate = g.length > 1;
+  const caja = document.getElementById("fiesta-caja");
+  caja.innerHTML = "";
+
+  caja.append(el("span",{class:"fiesta-copa"}, empate ? "🤝" : "🏆"));
+  caja.append(el("p",{class:"fiesta-rot"}, empate ? "Empate en lo más alto" : "Gana la partida"));
+
+  const nombre = el("div",{class:"fiesta-nombre"});
+  const texto = g.map(p=>p.nombre).join(" y ");
+  [...texto].forEach((ch,i)=>{
+    const sp = el("span",{}, ch === " " ? "\u00A0" : ch);
+    sp.style.animationDelay = (350 + i*55) + "ms";
+    nombre.append(sp);
+  });
+  caja.append(nombre);
+  caja.append(el("p",{class:"fiesta-pts"}, total(g[0].id) + " puntos"));
+
+  const resto = [...estado.jugadores].sort((a,b)=>total(b.id)-total(a.id))
+    .map((p,i)=>`${i+1}. ${p.nombre} · ${total(p.id)}`);
+  caja.append(el("p",{class:"fiesta-lista"}, resto.join("  ·  ")));
+
+  caja.append(el("div",{class:"fiesta-botones"},
+    el("button",{class:"btn", onclick:()=>{ cerrarFiesta(); compartir(); }},"Compartir"),
+    el("button",{class:"btn ghost", onclick:cerrarFiesta},"Cerrar")));
+
+  document.getElementById("fiesta").classList.add("on");
+  if(!matchMedia("(prefers-reduced-motion: reduce)").matches) lanzarFuegos();
+}
+
+function quizasCelebrar(){
+  if(!partidaCompleta() || estado.celebrada) return;
+  estado.celebrada = true; guardar(); render();
+  celebrar();
 }
 
 // ---------- Vistas ----------
@@ -405,7 +560,10 @@ function vistaPartida(){
   t.append(el("thead",{},trh), tb);
   frag.append(el("div",{class:"card"},
     el("h2",{},"Marcador"), el("div",{class:"scroll"}, t),
-    el("button",{class:"btn ghost", style:"width:100%;margin-top:10px", onclick:compartir},"Compartir resultado")));
+    el("button",{class:"btn ghost", style:"width:100%;margin-top:10px", onclick:compartir},"Compartir resultado"),
+    partidaCompleta()
+      ? el("button",{class:"btn ghost", style:"width:100%;margin-top:8px", onclick:celebrar},"🎆 Ver la celebración")
+      : document.createComment("")));
 
   // Acciones
   const hayDatos = estado.jugadores.some(p=>total(p.id)>0);
@@ -557,7 +715,7 @@ function render(){
   const cont = document.getElementById("vista");
   cont.innerHTML = "";
   cont.append(vista==="partida" ? vistaPartida() : vista==="historial" ? vistaHistorial() : vistaStats());
-  if(vista==="partida") pintarBanner();
+  if(vista==="partida"){ pintarBanner(); setTimeout(quizasCelebrar, 250); }
   pintarTabs();
 }
 document.querySelectorAll(".tabs button").forEach(b=>{
